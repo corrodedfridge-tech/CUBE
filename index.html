@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#050506">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="CUBE">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-180.png">
+<title>CUBE</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<canvas id="c"></canvas>
+<div id="hud">
+ <div class="hl"><div id="score">0</div><div id="best">Best 0</div><div id="chain"><span id="cn">×2</span><span id="cb"><i id="cf"></i></span></div></div>
+ <div id="boss"><div id="bn"><span id="bnm">The Roaring Knight</span><i>∞</i></div><span id="bb"><i id="bf"></i></span></div>
+ <div class="hr"><div id="tm">0:00</div><div id="thw"><span id="thl">Threat</span><div id="thr"><b></b><b></b><b></b><b></b><b></b></div></div></div>
+ <div id="hardtag">HARD MODE</div>
+ <div id="banner"><div id="bt"></div><i id="bl"></i><div id="bs"></div></div>
+ <div id="foot"><div id="ups"></div><div id="tpcol"><div id="tp"><span id="key">Space</span><span id="tpl">TP</span><div id="cells"></div><span id="tpv">0</span></div><div id="dashw"><span id="dashk">Shift</span><span id="dashl">Dash</span><span id="dashbar"><i id="dashf"></i></span></div></div><div></div></div>
+ <div id="touch"><div id="stick"><i id="nub"></i></div><div id="fireb"><span id="firel">FIRE</span></div><div id="dashb">DASH</div></div>
+ <div id="stamw"><span id="staml">Stamina</span><span id="stamb"><i id="stamf"></i></span><span id="stamv">100</span></div>
+</div>
+<div id="vfeed"><div id="vfin"><video id="vfv" muted loop playsinline preload="auto"></video><canvas id="vfc"></canvas></div></div>
+
+<div id="menu" class="scr">
+ <div id="cube3d"><div id="cg"></div><div id="cbx"><i class="a"></i><i class="b"></i><i class="c"></i><i class="d"></i><i class="e"></i><i class="g"></i></div></div>
+ <h1 class="logo">CUBE</h1>
+ <p class="tag">Dodge the red cubes</p>
+ <p class="ver" id="verl">v3.4</p>
+ <div class="list"><button class="btn on" data-a="play" tabindex="-1">Play</button><button class="btn" data-a="shop" tabindex="-1">Shop</button><button class="btn" data-a="settings" tabindex="-1">Settings</button></div>
+ <div class="list row2"><button class="btn sm" data-a="awards" tabindex="-1">Awards</button><button class="btn sm" data-a="daily" tabindex="-1">Daily cube</button><button class="btn sm hid" id="installb" data-a="install" tabindex="-1">Install app</button></div>
+ <p class="dayl" id="dayl"></p>
+ <p class="hs" id="hs"></p>
+ <p class="shm" id="shm"></p>
+ <p id="rot">Rotate your device for a bigger arena</p>
+ <p class="any">Press any key</p>
+ <div class="keys"><span><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd>Move</span><span><kbd>Space</kbd>Fire</span><span><kbd>Shift</kbd>Dash</span><span><kbd>P</kbd>Pause</span></div>
+</div>
+
+<div id="pause" class="scr">
+ <h2 class="big">Paused</h2>
+ <div class="list"><button class="btn on" data-a="resume" tabindex="-1">Resume</button><button class="btn" data-a="restart" tabindex="-1">Restart</button><button class="btn" data-a="menu" tabindex="-1">Quit</button></div>
+ <div class="keys"><span><kbd>↑</kbd><kbd>↓</kbd>Select</span><span><kbd>Enter</kbd>Confirm</span><span><kbd>Esc</kbd>Resume</span></div>
+</div>
+
+<div id="awards" class="scr">
+ <div class="ttl">Awards</div>
+ <div id="acbar"><b id="acn">0 / 0</b><i><u id="acp"></u></i><button type="button" id="acf">Everything</button></div>
+ <div id="acrow"></div>
+ <p class="chint"><kbd>W</kbd><kbd>S</kbd> scroll &nbsp;&middot;&nbsp; <kbd>Space</kbd> filter &nbsp;&middot;&nbsp; <kbd>Esc</kbd> back</p>
+ <div class="list"><button class="btn" data-a="menu" tabindex="-1">Back</button></div>
+</div>
+
+<div id="bank" class="scr">
+ <div class="ttl" id="bkw">Boss down</div>
+ <div id="bkv">0</div>
+ <div id="bkb"></div>
+ <div class="list"><button class="btn on" data-a="banktake" tabindex="-1">Bank it and stop</button><button class="btn" data-a="bankpass" tabindex="-1">Keep going</button></div>
+ <p id="bknx"></p>
+</div>
+
+<div id="settings" class="scr">
+ <div class="ttl">Settings</div>
+ <div id="setrow"></div>
+ <p id="hardnote"><b>Hard mode</b> is not a nudge. You start with about half the shields, the
+  cubes open at threat 3 and keep climbing faster, they arrive nearly twice as often, the
+  warning diamonds give you a third less notice, upgrades drop half as often, the gun charges
+  slower and the bosses take longer to go down. It pays out <b>75% more shards</b>, which is
+  the only reason anyone would.</p>
+ <p class="chint"><kbd>W</kbd><kbd>S</kbd> choose &nbsp;&middot;&nbsp; <kbd>A</kbd><kbd>D</kbd> adjust &nbsp;&middot;&nbsp; <kbd>Space</kbd> toggle &nbsp;&middot;&nbsp; <kbd>Esc</kbd> back</p>
+ <div class="list"><button class="btn" data-a="menu" tabindex="-1">Back</button></div>
+</div>
+
+<div id="shop" class="scr">
+ <div class="ttl">Shop</div>
+ <div id="shardbar"><span id="shardn">0</span><i>◆</i><span id="shardm"></span></div>
+ <div id="shoptabs">
+  <button type="button" class="stab on" data-t="0">Upgrades</button>
+  <button type="button" class="stab" data-t="1">The cube</button>
+ </div>
+ <div id="shoppane">
+  <div id="shoprow"></div>
+  <div id="skinrow" class="hid"></div>
+ </div>
+ <p class="chint" id="shophint"></p>
+ <div class="list"><button class="btn" data-a="menu" tabindex="-1">Back</button></div>
+</div>
+
+<div id="cards" class="scr">
+ <div class="ttl">Upgrade</div>
+ <div id="cardrow"></div>
+ <p class="chint"><kbd>A</kbd><kbd>D</kbd> choose &nbsp;·&nbsp; <kbd>Space</kbd> take it</p>
+</div>
+
+<div id="win" class="scr">
+ <div class="ttl" id="wttl">Matthew falls</div>
+ <div id="ws">0</div>
+ <div id="wnb" class="badge hid">New best</div>
+ <div id="wbest">Best 0</div>
+ <div class="pay" id="wpay"></div>
+ <div class="stats"><div><b id="w1">0:00</b><span>Time</span></div><div><b id="w2">0</b><span>Near misses</span></div><div><b id="w3">0</b><span>Kills</span></div><div><b id="w4">–</b><span>Best chain</span></div></div>
+ <div class="list"><button class="btn on" data-a="cont" tabindex="-1">Keep going</button><button class="btn" data-a="menu" tabindex="-1">Menu</button></div>
+</div>
+
+<div id="over" class="scr">
+ <div class="ttl">Game over</div>
+ <div id="os">0</div>
+ <div id="o2a" class="mode"></div>
+ <div id="onb" class="badge hid">New best</div>
+ <div id="obest">Best 0</div>
+ <div class="pay" id="opay"></div>
+ <div class="stats"><div><b id="o1">0:00</b><span>Time</span></div><div><b id="o2">0</b><span>Near misses</span></div><div><b id="o3">0</b><span>Kills</span></div><div><b id="o4">–</b><span>Best chain</span></div></div>
+ <div class="list"><button class="btn on" data-a="retry" tabindex="-1">Retry</button><button class="btn" data-a="menu" tabindex="-1">Menu</button></div>
+ <div class="keys"><span><kbd>Enter</kbd>Retry</span><span><kbd>R</kbd>Restart</span><span><kbd>Esc</kbd>Menu</span></div>
+</div>
+
+<div id="ios"><div>
+  <h3>Install CUBE</h3>
+  <p>Tap <b>Share</b> in the browser toolbar, then <b>Add to Home Screen</b>.</p>
+  <p>It then runs full screen, with no browser bars, and works offline.</p>
+  <span>Tap anywhere to close</span>
+</div></div>
+<div id="atray" aria-live="polite"></div>
+<div id="btns">
+ <button class="ib" id="bp" type="button" aria-label="Pause" title="Pause (P)"><svg viewBox="0 0 24 24"><path d="M8 5v14M16 5v14"/></svg></button>
+ <button class="ib" id="mute" type="button" aria-label="Toggle sound" title="Sound (M)"><svg viewBox="0 0 24 24"><path d="M4 9.5v5h3.5L12 18.5v-13L7.5 9.5z"/><path class="w" d="M15.5 9a4.2 4.2 0 0 1 0 6M18 6.5a8 8 0 0 1 0 11"/><path class="x" d="M15.5 9.5l5 5M20.5 9.5l-5 5"/></svg></button>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
