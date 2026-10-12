@@ -1,0 +1,94 @@
+rules_version = '2';
+
+/* CUBE — Firestore security rules.
+   Paste these into Firebase console → Firestore Database → Rules → Publish.
+
+   This file, not the config in index.html, is what protects the database. The config is
+   public and always will be; these rules are what decide who may read and write what.
+
+   The short version:
+     - anybody signed in may read the boards and write exactly one row per board per window,
+       for themselves, with a number inside believable limits, and only upward
+     - a player may write their own user document, and may not touch the two fields that
+       would let them cheat: `banned` and `grant`
+     - corrodedfridge@gmail.com may do anything                                          */
+
+function admin() {
+  return request.auth != null
+      && request.auth.token.email == 'corrodedfridge@gmail.com'
+      && request.auth.token.email_verified == true;
+}
+function signedIn()  { return request.auth != null; }
+function mine(uid)   { return request.auth != null && request.auth.uid == uid; }
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    /* ---------------- players ---------------- */
+    match /users/{uid} {
+      allow read: if mine(uid) || admin();
+      allow delete: if admin();
+
+      // You may write your own row, but not the two fields that are about you rather than
+      // from you: an admin's parcel, and whether you are banned. An admin may write anything.
+      allow create: if admin() || (
+           mine(uid)
+        && request.resource.data.uid == uid
+        && !('grant' in request.resource.data)
+        && !('banned' in request.resource.data)
+        && request.resource.data.get('name', '').size() <= 40
+      );
+      allow update: if admin() || (
+           mine(uid)
+        && request.resource.data.uid == uid
+        && request.resource.data.get('grant',  resource.data.get('grant',  {})) == resource.data.get('grant',  {})
+        && request.resource.data.get('banned', resource.data.get('banned', false)) == resource.data.get('banned', false)
+        && request.resource.data.get('name', '').size() <= 40
+      );
+    }
+
+    /* ---------------- the boards ----------------
+       The document id is kind__period__uid, so a player can only ever occupy one row per
+       board per window, and the rule can check that the row is theirs by its name. */
+    match /scores/{entry} {
+      allow read: if signedIn();
+      allow delete: if admin();
+
+      allow create, update: if admin() || (
+           signedIn()
+        && entry == request.resource.data.kind + '__' + request.resource.data.period + '__' + request.auth.uid
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.kind in ['score', 'time', 'rb']
+        && request.resource.data.v is number
+        && request.resource.data.v > 0
+        // nobody scores two million, survives longer than a day, or rebirths five hundred times
+        && request.resource.data.v <= (request.resource.data.kind == 'score' ? 2000000
+                                     : request.resource.data.kind == 'time'  ? 86400 : 500)
+        && request.resource.data.name.size() <= 40
+        && request.resource.data.period.size() <= 10
+        // a score only ever goes up, and a banned player's does not go anywhere
+        && (resource == null || request.resource.data.v > resource.data.v)
+        && !exists(/databases/$(database)/documents/banned/$(request.auth.uid))
+      );
+    }
+
+    /* ---------------- the ban list ----------------
+       Kept out of /users so the score rule can check it in one cheap read. The admin panel
+       writes both. */
+    match /banned/{uid} {
+      allow read: if mine(uid) || admin();
+      allow write: if admin();
+    }
+
+    /* ---------------- the notice on the menu ---------------- */
+    match /meta/{doc} {
+      allow read: if true;
+      allow write: if admin();
+    }
+
+    // anything not named above is closed
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
